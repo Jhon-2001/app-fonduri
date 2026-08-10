@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+data/*.db
+data/*.sqlite
+data/*.json
+
+# QuickPaste local tool
+tools/quickpaste/.venv/
+tools/quickpaste/snippets.json
+tools/quickpaste/__pycache__/
+tools/quickpaste/build/
+tools/quickpaste/dist/

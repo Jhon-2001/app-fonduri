@@ -1,26 +1,184 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root,
+html[data-theme="light"] {
+  --bg: #fafafa;
+  --fg: #27272a;
+  --muted: #52525b;
+  --surface: #ffffff;
+  --surface-2: #f4f4f5;
+  --input: #ffffff;
+  --border: #e4e4e7;
+  --chip-active: #e4e4e7;
+  --brand-green: #4caf50;
+  --brand-blue: #3498db;
+}
+
+html[data-theme="dark"],
+html.dark {
+  --bg: #262626;
+  --fg: #ffffff;
+  --muted: #a3a3a3;
+  --surface: rgba(255, 255, 255, 0.1);
+  --surface-2: rgba(255, 255, 255, 0.07);
+  --input: rgba(255, 255, 255, 0.1);
+  --border: rgba(255, 255, 255, 0.1);
+  --chip-active: rgba(255, 255, 255, 0.14);
+  --brand-green: #4caf50;
+  --brand-blue: #3498db;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  color: #0a0a0a;
+  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+
+.btn-primary:hover {
+  background: #e4e4e7;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+}
+
+/* Stiluri identice cu formularul de pe platformă (Flux UI) */
+.fx-card {
+  border-radius: 0.75rem;
+  border: 1px solid #e4e4e7;
+  background: #ffffff;
+  padding: 1.5rem;
+}
+
+.dark .fx-card {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.fx-heading {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 500;
+  color: #27272a;
+  margin-bottom: 1.5rem;
+}
+
+.dark .fx-heading {
+  color: #ffffff;
+}
+
+.fx-label {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.875rem;
+  line-height: 1.09375rem;
+  font-weight: 500;
+  color: #27272a;
+  margin-bottom: 0.5rem;
+}
+
+.dark .fx-label {
+  color: #ffffff;
+}
+
+.fx-input {
+  display: block;
+  width: 100%;
+  height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e4e4e7;
+  border-bottom-color: rgba(212, 212, 216, 0.8);
+  background: #ffffff;
+  color: #3f3f46;
+  font-size: 1rem;
+  line-height: 1.375rem;
+  appearance: none;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+select.fx-input {
+  appearance: auto;
+  background-image: none;
+  cursor: pointer;
+}
+
+@media (min-width: 640px) {
+  .fx-input {
+    font-size: 0.875rem;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.fx-input::placeholder {
+  color: #a1a1aa;
+}
+
+.dark .fx-input {
+  border-color: rgba(255, 255, 255, 0.1);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  color: #d4d4d4;
+  box-shadow: none;
+}
+
+.fx-input:focus {
+  outline: none;
+  border-color: #a1a1aa;
+}
+
+.dark .fx-input:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.fx-radio {
+  margin-top: 0.25rem;
+  color: #52525b;
+  accent-color: #52525b;
+}
+
+.dark .fx-radio {
+  accent-color: #a1a1aa;
+}
+
+.fx-sublabel {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: #52525b;
+  margin-bottom: 0.5rem;
+}
+
+.dark .fx-sublabel {
+  color: #a3a3a3;
+}
+
+.fx-subgroup {
+  margin-top: 0.75rem;
+  margin-left: 1.5rem;
+  padding-left: 1rem;
+  border-left: 2px solid #e4e4e7;
+}
+
+.dark .fx-subgroup {
+  border-left-color: #3f3f46;
 }

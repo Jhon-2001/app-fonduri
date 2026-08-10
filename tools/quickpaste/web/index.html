@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QuickPaste – generator bookmarklet</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b1020;
+        --card: #111827;
+        --border: #2b3648;
+        --fg: #f3f4f6;
+        --muted: #9aa4b2;
+        --accent: #6366f1;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 32px 20px 64px;
+        background: var(--bg);
+        color: var(--fg);
+        font: 14px/1.55 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+      }
+      .wrap { max-width: 760px; margin: 0 auto; }
+      h1 { font-size: 20px; margin: 0 0 6px; }
+      p.lead { color: var(--muted); margin: 0 0 24px; }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px;
+        margin-bottom: 18px;
+      }
+      label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+      .row { display: grid; grid-template-columns: 44px 1fr; gap: 10px; margin-bottom: 10px; }
+      .key {
+        display: flex; align-items: center; justify-content: center;
+        border: 1px solid var(--border); border-radius: 8px;
+        background: #1a2233; font-size: 12px; color: var(--muted);
+      }
+      input, select, textarea {
+        width: 100%; background: #1a2233; border: 1px solid var(--border);
+        color: var(--fg); border-radius: 8px; padding: 9px 10px; font: inherit;
+      }
+      input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+      .bar { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 16px; }
+      .bar > div { flex: 1 1 220px; }
+      a.bookmarklet {
+        display: inline-block; background: var(--accent); color: #fff;
+        padding: 10px 16px; border-radius: 10px; text-decoration: none; font-weight: 600;
+      }
+      button {
+        background: #1a2233; color: var(--fg); border: 1px solid var(--border);
+        border-radius: 8px; padding: 9px 12px; font: inherit; cursor: pointer;
+      }
+      ol { padding-left: 18px; color: var(--muted); }
+      code { background: #1a2233; padding: 1px 5px; border-radius: 4px; color: var(--fg); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>QuickPaste – generator bookmarklet</h1>
+      <p class="lead">
+        Scrie textele, alege combinația de taste și trage butonul albastru în bara de
+        favorite. Pe orice site, dai click pe favorit o dată, apoi combinația + 1…9
+        scrie textul în câmpul în care ai cursorul.
+      </p>
+
+      <div class="card">
+        <div class="bar">
+          <div>
+            <label for="mod">Combinație de taste</label>
+            <select id="mod">
+              <option value="alt">Option / Alt + cifră (recomandat)</option>
+              <option value="ctrl+shift">Ctrl + Shift + cifră</option>
+              <option value="meta+shift">Command / Win + Shift + cifră</option>
+              <option value="ctrl">Ctrl + cifră</option>
+              <option value="meta">Command / Win + cifră (browserul poate schimba tabul)</option>
+            </select>
+          </div>
+          <div>
+            <label for="tab">După scriere</label>
+            <select id="tab">
+              <option value="no">Rămâi în câmp</option>
+              <option value="yes">Sari automat la câmpul următor</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="rows"></div>
+      </div>
+
+      <div class="card">
+        <label>Trage acest buton în bara de favorite:</label>
+        <a class="bookmarklet" id="link" href="#">QuickPaste</a>
+        <button id="copy" style="margin-left: 10px">Copiază codul</button>
+        <ol style="margin-top: 16px">
+          <li>Deschide site-ul pe care vrei să completezi formularul.</li>
+          <li>Click pe favoritul <em>QuickPaste</em> (o dată per pagină încărcată).</li>
+          <li>Click în câmp, apoi combinația + cifra slotului.</li>
+        </ol>
+      </div>
+    </div>
+
+    <script>
+      var SLOTS = 9;
+      var STORE = "quickpaste_generator_v1";
+
+      var rowsBox = document.getElementById("rows");
+      var modSelect = document.getElementById("mod");
+      var tabSelect = document.getElementById("tab");
+      var link = document.getElementById("link");
+
+      var state = load();
+
+      function load() {
+        try {
+          var raw = localStorage.getItem(STORE);
+          if (raw) {
+            var parsed = JSON.parse(raw);
+            if (Array.isArray(parsed.slots)) {
+              while (parsed.slots.length < SLOTS) parsed.slots.push("");
+              return parsed;
+            }
+          }
+        } catch (err) {}
+        return { mod: "alt", tab: "no", slots: new Array(SLOTS).fill("") };
+      }
+
+      function save() {
+        try {
+          localStorage.setItem(STORE, JSON.stringify(state));
+        } catch (err) {}
+      }
+
+      for (var i = 0; i < SLOTS; i++) {
+        (function (index) {
+          var row = document.createElement("div");
+          row.className = "row";
+
+          var key = document.createElement("div");
+          key.className = "key";
+          key.textContent = String(index + 1);
+
+          var input = document.createElement("textarea");
+          input.rows = 1;
+          input.placeholder = "Text pentru slotul " + (index + 1);
+          input.value = state.slots[index] || "";
+          input.addEventListener("input", function () {
+            state.slots[index] = input.value;
+            save();
+            render();
+          });
+
+          row.appendChild(key);
+          row.appendChild(input);
+          rowsBox.appendChild(row);
+        })(i);
+      }
+
+      modSelect.value = state.mod;
+      tabSelect.value = state.tab;
+      modSelect.addEventListener("change", function () {
+        state.mod = modSelect.value;
+        save();
+        render();
+      });
+      tabSelect.addEventListener("change", function () {
+        state.tab = tabSelect.value;
+        save();
+        render();
+      });
+
+      /* Codul injectat in pagina tinta. Ruleaza pe orice site. */
+      function payloadSource() {
+        return function (cfg) {
+          var tests = {
+            alt: function (e) { return e.altKey && !e.ctrlKey && !e.metaKey; },
+            ctrl: function (e) { return e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey; },
+            "ctrl+shift": function (e) { return e.ctrlKey && e.shiftKey && !e.metaKey; },
+            "meta+shift": function (e) { return e.metaKey && e.shiftKey; },
+            meta: function (e) { return e.metaKey && !e.shiftKey && !e.altKey; }
+          };
+          var test = tests[cfg.m] || tests.alt;
+
+          if (window.__quickPaste) {
+            window.__quickPaste.cfg = cfg;
+            window.__quickPaste.note("QuickPaste actualizat");
+            return;
+          }
+
+          var box = document.createElement("div");
+          box.style.cssText =
+            "position:fixed;right:16px;bottom:16px;z-index:2147483647;background:#4f46e5;" +
+            "color:#fff;padding:8px 12px;border-radius:8px;font:12px sans-serif;" +
+            "opacity:0;transition:opacity .15s;pointer-events:none";
+          document.documentElement.appendChild(box);
+          var timer = null;
+
+          function note(message) {
+            box.textContent = message;
+            box.style.opacity = "1";
+            clearTimeout(timer);
+            timer = setTimeout(function () { box.style.opacity = "0"; }, 1300);
+          }
+
+          function editable(el) {
+            if (!el) return false;
+            if (el.isContentEditable) return true;
+            if (el.tagName === "TEXTAREA") return true;
+            if (el.tagName !== "INPUT") return false;
+            return ["text", "email", "search", "tel", "url", "number", "password", ""]
+              .indexOf(el.type) !== -1;
+          }
+
+          function insert(el, text) {
+            if (el.isContentEditable) {
+              document.execCommand("insertText", false, text);
+              return;
+            }
+            var proto = el.tagName === "TEXTAREA"
+              ? HTMLTextAreaElement.prototype
+              : HTMLInputElement.prototype;
+            var setter = Object.getOwnPropertyDescriptor(proto, "value").set;
+            var start = el.selectionStart == null ? el.value.length : el.selectionStart;
+            var end = el.selectionEnd == null ? el.value.length : el.selectionEnd;
+            var next = el.value.slice(0, start) + text + el.value.slice(end);
+            setter.call(el, next);
+            try {
+              el.setSelectionRange(start + text.length, start + text.length);
+            } catch (err) {}
+            el.dispatchEvent(new Event("input", { bubbles: true }));
+            el.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+
+          function nextField(el) {
+            var all = Array.prototype.filter.call(
+              document.querySelectorAll("input, textarea, [contenteditable=true]"),
+              function (node) { return editable(node) && node.offsetParent !== null; }
+            );
+            var at = all.indexOf(el);
+            if (at > -1 && all[at + 1]) all[at + 1].focus();
+          }
+
+          window.addEventListener("keydown", function (e) {
+            var cfgNow = window.__quickPaste.cfg;
+            if (!(tests[cfgNow.m] || test)(e)) return;
+            var match = /^Digit([1-9])$/.exec(e.code);
+            if (!match) return;
+
+            var text = cfgNow.s[Number(match[1]) - 1];
+            if (!text) { note("Slotul " + match[1] + " este gol"); return; }
+
+            var el = document.activeElement;
+            if (!editable(el)) { note("Click intai intr-un camp"); return; }
+
+            e.preventDefault();
+            e.stopPropagation();
+            insert(el, text);
+            note("Slot " + match[1] + " scris");
+            if (cfgNow.t === "yes") nextField(el);
+          }, true);
+
+          window.__quickPaste = { cfg: cfg, note: note };
+          note("QuickPaste activ pe aceasta pagina");
+        };
+      }
+
+      function render() {
+        var cfg = { m: state.mod, t: state.tab, s: state.slots };
+        var code =
+          "(" + payloadSource().toString() + ")(" + JSON.stringify(cfg) + ")";
+        link.href = "javascript:" + encodeURIComponent(code) + ";void 0";
+      }
+
+      document.getElementById("copy").addEventListener("click", function () {
+        navigator.clipboard.writeText(decodeURIComponent(link.href.replace(/^javascript:/, "")));
+        this.textContent = "Copiat!";
+        var self = this;
+        setTimeout(function () { self.textContent = "Copiază codul"; }, 1200);
+      });
+
+      render();
+    </script>
+  </body>
+</html>
