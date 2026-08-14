@@ -74,7 +74,7 @@ def main() -> int:
         command += ["--onefile"]
     command.append(os.path.join(HERE, "formfill.py"))
 
-    print("Construiesc... (durează un minut)")
+    print("Construiesc... (dureaza un minut)")
     subprocess.run(command, check=True)
 
     if IS_MAC:
@@ -86,9 +86,8 @@ def main() -> int:
         print(f"\nGata: {app}")
     else:
         exe = os.path.join(HERE, "dist", "FormFill.exe")
-        # Marcaj opțional: dacă pui portable.txt lângă exe, configul stă pe stick.
         print(f"\nGata: {exe}")
-        print("Un singur fișier — copiază-l pe stick / email, dublu-click pe Windows.")
+        print("Un singur fisier — copiaza-l pe stick / email, dublu-click pe Windows.")
 
     return 0
 
